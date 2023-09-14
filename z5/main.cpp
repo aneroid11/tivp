@@ -15,11 +15,28 @@ int main(int argc, char** argv)
     std::string path_to_dir = argv[1];
     std::string ext = argv[2];
 
-    for (const auto& dir_entry : recursive_directory_iterator(path_to_dir))
+    try
     {
-        std::cout << dir_entry << std::endl;
+        const auto& iter = recursive_directory_iterator(path_to_dir);
+
+        for (const auto& dir_entry : iter)
+        {
+            const std::string entry_str = dir_entry.path().string();
+
+            if (entry_str.length() >= ext.length() + 1)
+            {
+                if (0 == entry_str.compare(entry_str.length() - ext.length() - 1, ext.length() + 1, "." + ext))
+                {
+                    std::cout << dir_entry << std::endl;
+                }
+            }
+        }
+    }
+    catch (const std::filesystem::filesystem_error& err)
+    {
+        std::cout << "no such directory!\n";
+        exit(EXIT_FAILURE);
     }
 
-    std::cout << "find files with extension " << argv[2] << " in " << argv[1] << "\n";
     return 0;
 }
