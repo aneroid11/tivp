@@ -14,22 +14,29 @@ int main(int argc, char** argv)
     const std::string url = argv[1];
     const std::string path = argv[2];
 
-    CURL *curl;
     FILE *fp;
     CURLcode res;
-    curl = curl_easy_init();
+    CURL *curl = curl_easy_init();
 
     if (curl)
     {
         fp = fopen(path.c_str(),"wb");
+        if (!fp)
+        {
+            std::cerr << "Cannot open " << path << " for writing!\n";
+            exit(EXIT_FAILURE);
+        }
+
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NULL);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
+        curl_easy_setopt(curl, CURLOPT_FAILONERROR, true);
 
         res = curl_easy_perform(curl);
         if (res)
         {
             std::cerr << "cannot download file from url!\n";
+            std::cerr << curl_easy_strerror(res) << "\n";
             exit(EXIT_FAILURE);
         }
 
