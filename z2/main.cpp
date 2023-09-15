@@ -2,6 +2,7 @@
 #include <string>
 #include <list>
 #include <limits>
+#include <iomanip>
 
 struct Person
 {
@@ -68,7 +69,9 @@ int main()
         }
     }
 
-    std::cout << min_age << " " << max_age << " " << static_cast<float>(total_age) / people.size() << "\n";
+    std::cout << min_age << " " << max_age << " "
+              << std::fixed << std::setprecision(2)
+              << static_cast<float>(total_age) / people.size() << "\n";
 
     return 0;
 }

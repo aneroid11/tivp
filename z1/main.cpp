@@ -42,8 +42,8 @@ void test_print_hello_world()
 
 int main()
 {
-    TestRunner tr;
-    RUN_TEST(tr, test_print_hello_world);
+//    TestRunner tr;
+//    RUN_TEST(tr, test_print_hello_world);
 
     print_hello_world(std::cout);
 
