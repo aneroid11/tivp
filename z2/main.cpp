@@ -3,6 +3,8 @@
 #include <list>
 #include <limits>
 #include <iomanip>
+#include <sstream>
+#include "test_runner.h"
 
 struct Person
 {
@@ -10,30 +12,29 @@ struct Person
     unsigned age = 0;
 };
 
-int main()
+std::list<Person> read_people(std::ostream& out = std::cout, std::istream& in = std::cin)
 {
     std::list<Person> people;
-
     do
     {
-        std::cout << "continue entering information? (y/n) ";
+        out << "continue entering information? (y/n) ";
         std::string choice;
-        std::cin >> choice;
+        in >> choice;
 
         if (choice == "y")
         {
             Person person;
-            std::cout << "enter the last name: ";
-            std::cin >> person.last_name;
-            std::cout << "enter the first name: ";
-            std::cin >> person.first_name;
-            std::cout << "enter the age: ";
+            out << "enter the last name: ";
+            in >> person.last_name;
+            out << "enter the first name: ";
+            in >> person.first_name;
+            out << "enter the age: ";
 
-            while (!(std::cin >> person.age) || person.age < 1 || person.age > 150)
+            while (!(in >> person.age) || person.age < 1 || person.age > 150)
             {
-                std::cin.clear();
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                std::cout << "incorrect age! please try again: ";
+                in.clear();
+                in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                out << "incorrect age! please try again: ";
             }
 
             people.push_back(person);
@@ -44,10 +45,15 @@ int main()
         }
         else
         {
-            std::cout << "enter y or n!\n";
+            out << "enter y or n!\n";
         }
     } while (true);
 
+    return people;
+}
+
+void print_result(const std::list<Person>& people, std::ostream& out = std::cout)
+{
     unsigned max_age, min_age;
     max_age = min_age = people.cbegin()->age;
 
@@ -55,7 +61,7 @@ int main()
 
     for (const Person& p : people)
     {
-        std::cout << p.last_name << " " << p.first_name << " " << p.age << "\n";
+        out << p.last_name << " " << p.first_name << " " << p.age << "\n";
 
         total_age += p.age;
 
@@ -69,9 +75,71 @@ int main()
         }
     }
 
-    std::cout << min_age << " " << max_age << " "
-              << std::fixed << std::setprecision(2)
-              << static_cast<float>(total_age) / people.size() << "\n";
+    out << min_age << " " << max_age << " "
+    << std::fixed << std::setprecision(2)
+    << static_cast<float>(total_age) / people.size() << "\n";
+}
+
+void test_read_people()
+{
+    std::stringstream in("y "
+                         "Alex Alex 40 "
+                         "y "
+                         "Dima Mak 41 "
+                         "n");
+
+    std::stringstream out;
+
+    read_people(out, in);
+
+    std::string expected_out = "continue entering information? (y/n) "
+                               "enter the last name: "
+                               "enter the first name: "
+                               "enter the age: "
+                               "continue entering information? (y/n) "
+                               "enter the last name: "
+                               "enter the first name: "
+                               "enter the age: "
+                               "continue entering information? (y/n) ";
+
+    std::string out_str = out.str();
+
+    ASSERT(out_str == expected_out);
+}
+
+void test_print_result()
+{
+    std::list<Person> people = {
+            Person{"Alex", "Alex", 40},
+            Person{"Dima", "Mak", 20}
+    };
+
+    std::ostringstream out;
+    print_result(people, out);
+
+    std::string out_str = out.str();
+    std::string expected_out = "Alex Alex 40\n"
+                               "Mak Dima 20\n"
+                               "20 40 30.00\n";
+
+    ASSERT(out_str == expected_out);
+}
+
+void run_tests()
+{
+    TestRunner tr;
+    RUN_TEST(tr, test_read_people);
+    RUN_TEST(tr, test_print_result);
+}
+
+int main()
+{
+    run_tests();
+
+    std::list<Person> people = read_people();
+    print_result(people);
+
+
 
     return 0;
 }
