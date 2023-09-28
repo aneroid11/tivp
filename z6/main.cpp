@@ -1,10 +1,14 @@
 #include <iostream>
 #include <string>
 #include <cstdio>
-#include <curl/curl.h>
+
+#include "load.h"
+#include "load_tests.h"
 
 int main(int argc, char** argv)
 {
+    run_tests();
+
     if (argc != 3)
     {
         std::cout << "you must specify exactly two arguments: url and path!\n";
@@ -14,38 +18,29 @@ int main(int argc, char** argv)
     const std::string url = argv[1];
     const std::string path = argv[2];
 
-    FILE *fp;
-    CURLcode res;
-    CURL *curl = curl_easy_init();
-
-    if (curl)
+    if(!is_path_exist(path))
     {
-        fp = fopen(path.c_str(),"wb");
-        if (!fp)
-        {
-            std::cerr << "Cannot open " << path << " for writing!\n";
-            exit(EXIT_FAILURE);
-        }
-
-        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NULL);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
-        curl_easy_setopt(curl, CURLOPT_FAILONERROR, true);
-
-        res = curl_easy_perform(curl);
-        if (res)
-        {
-            std::cerr << "cannot download file from url!\n";
-            std::cerr << curl_easy_strerror(res) << "\n";
-            exit(EXIT_FAILURE);
-        }
-
-        curl_easy_cleanup(curl);
-        fclose(fp);
+        std::cout << "File " << path << " does not exist";
+        exit(EXIT_FAILURE);
     }
-    else
+
+    auto result = load(url, path);
+
+    if(result != LoadResult::SUCCESS)
     {
-        std::cerr << "failed to initialize CURL!\n";
+        switch (result)
+        {
+            case LoadResult::OPEN_FILE_FAILED:
+                std::cerr << "Cannot open " << path << " for writing!\n";
+                break;
+            case LoadResult::DOWNLOAD_FILE_FAILED:
+                std::cerr << "cannot download file from url!\n";
+                break;
+            case LoadResult::INITIALIZE_CURL_FAILED:
+                std::cerr << "failed to initialize CURL!\n";
+                break;
+        }
+        exit(EXIT_FAILURE);
     }
 
     return 0;
