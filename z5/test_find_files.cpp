@@ -1,3 +1,4 @@
+#include <sstream>
 #include "test_find_files.h"
 #include "find_files.h"
 #include "test_runner.h"
@@ -37,6 +38,15 @@ void test_has_extension_simple()
     ASSERT(result == true);
 }
 
+void test_has_extension_false()
+{
+    std::string file = "hello.txt";
+    std::string ext = ".ru";
+    auto result = has_extension(file, ext);
+
+    ASSERT(result == false);
+}
+
 void test_get_all_files_recursive()
 {
     auto path_to_dir = std::filesystem::current_path().parent_path();
@@ -60,10 +70,66 @@ void test_get_all_files_recursive()
     ASSERT(is_equal(result, expected_files));
 }
 
+void test_find_files_with_ext()
+{
+    auto path_to_dir = std::filesystem::current_path().parent_path();
+    path_to_dir.append("TestData");
+    path_to_dir.append("test_find_files_with_ext");
+    std::string path = path_to_dir.generic_string();
+    std::string ext = ".true";
+
+    auto result = find_files_with_ext(path, ext);
+
+    std::vector<std::string> expected_files = {
+            "/home/matvey/Documents/EducationalMaterials/7sem/TiVP/lab1/tivp/z5/TestData/test_find_files_with_ext/child/chiled_2/file_3_1.true",
+            "/home/matvey/Documents/EducationalMaterials/7sem/TiVP/lab1/tivp/z5/TestData/test_find_files_with_ext/child/file_2_1.true",
+            "/home/matvey/Documents/EducationalMaterials/7sem/TiVP/lab1/tivp/z5/TestData/test_find_files_with_ext/file_1_1.true",
+    };
+
+    ASSERT(is_equal(result, expected_files));
+}
+
+void test_find_files_with_unused_ext()
+{
+    auto path_to_dir = std::filesystem::current_path().parent_path();
+    path_to_dir.append("TestData");
+    path_to_dir.append("test_find_files_with_ext");
+    std::string path = path_to_dir.generic_string();
+    std::string ext = ".by";
+
+    auto result = find_files_with_ext(path, ext);
+
+    std::vector<std::string> expected_files = {};
+
+    ASSERT(is_equal(result, expected_files));
+}
+
+void test_print_files()
+{
+    std::vector<std::string> files = {
+            "/home/matvey/Documents/EducationalMaterials/7sem/TiVP/lab1/tivp/z5/TestData/test_find_files_with_ext/child/chiled_2/file_3_1.true",
+            "/home/matvey/Documents/EducationalMaterials/7sem/TiVP/lab1/tivp/z5/TestData/test_find_files_with_ext/child/file_2_1.true",
+            "/home/matvey/Documents/EducationalMaterials/7sem/TiVP/lab1/tivp/z5/TestData/test_find_files_with_ext/file_1_1.true",
+    };
+    std::ostringstream out;
+
+    print_files(files, out);
+
+    auto result = out.str();
+    std::string expected_result = "/home/matvey/Documents/EducationalMaterials/7sem/TiVP/lab1/tivp/z5/TestData/test_find_files_with_ext/child/chiled_2/file_3_1.true\n"
+                                  "/home/matvey/Documents/EducationalMaterials/7sem/TiVP/lab1/tivp/z5/TestData/test_find_files_with_ext/child/file_2_1.true\n"
+                                  "/home/matvey/Documents/EducationalMaterials/7sem/TiVP/lab1/tivp/z5/TestData/test_find_files_with_ext/file_1_1.true\n";
+    ASSERT(result == expected_result);
+}
+
 void run_tests()
 {
     TestRunner tr;
     RUN_TEST(tr, test_get_extension_simple);
     RUN_TEST(tr, test_has_extension_simple);
+    RUN_TEST(tr, test_has_extension_false);
     RUN_TEST(tr, test_get_all_files_recursive);
+    RUN_TEST(tr, test_find_files_with_ext);
+    RUN_TEST(tr, test_find_files_with_unused_ext);
+    RUN_TEST(tr, test_print_files);
 }
